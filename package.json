@@ -1,0 +1,28 @@
+{
+  "name": "resourcecache",
+  "version": "0.1.0",
+  "description": "Caches resources from a string or URL in local files.",
+  "author": "Ruben Verborgh <ruben.verborgh@gmail.com>",
+  "keywords": ["cache", "resource"],
+  "main": "./lib/resourcecache.js",
+  "engines": {
+    "node": ">=0.6.0"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "vows": "~0.6.0",
+    "should": "~0.3.2",
+    "express": "~2.5.2"
+  },
+  "scripts": {
+    "test": "make test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/RubenVerborgh/ResourceCache.git"
+  },
+  "bugs": {
+    "url": "http://github.com/RubenVerborgh/ResourceCache/issues"
+  }
+}
