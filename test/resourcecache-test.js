@@ -7,8 +7,11 @@ var vows = require('vows'),
     path = require('path'),
     express = require('express');
 var dummyServer,
+    dummyServerSsl,
     dummyPort = 14207,
-    dummyRoot = 'http://localhost:' + dummyPort + '/';
+    dummyPortSsl = 14208,
+    dummyRoot = 'http://localhost:' + dummyPort + '/',
+    dummyRootSsl = 'https://localhost:' + dummyPortSsl + '/';
 
 vows.describe('ResourceCache').addBatch({
   'The ResourceCache module': {
@@ -30,12 +33,11 @@ vows.describe('ResourceCache').addBatch({
   },
   'A ResourceCache': {
     topic: function () {
-      dummyServer = express.createServer();
-      dummyServer.get(/^\/$/, function (req, res, next) {
-        var contentType = req.headers.accept || '';
-        res.send('contents' + contentType, 200);
-      });
+      dummyServer = createDummyServer();
       dummyServer.listen(dummyPort);
+      dummyServerSsl = createDummyServer({ key:  fs.readFileSync('test/assets/privatekey.pem'),
+                                           cert: fs.readFileSync('test/assets/certificate.pem') });
+      dummyServerSsl.listen(dummyPortSsl);
       return new ResourceCache()
     },
     
@@ -43,7 +45,10 @@ vows.describe('ResourceCache').addBatch({
       // unfortunately, tearDown is run directly after the tests have been started,
       // although some of the requests have not been made yet
       // (only an issue when executing this file directly from node, not with vows)
-      setTimeout(function () { dummyServer.close(); }, 500);
+      setTimeout(function () {
+        dummyServer.close();
+        dummyServerSsl.close();
+      }, 500);
     },
     
     'when asked for its directory name': {
@@ -108,7 +113,7 @@ vows.describe('ResourceCache').addBatch({
       }
     },
     
-    'when caching an existing resource through HTTP': {
+    'when caching an existing resource by URL through HTTP': {
       topic: function(resourceCache) {
         return resourceCache.cacheFromUrl(dummyRoot, this.callback);
       },
@@ -124,7 +129,7 @@ vows.describe('ResourceCache').addBatch({
       }
     },
     
-    'when caching a non-existing resource through HTTP': {
+    'when caching a non-existing resource by URL through HTTP': {
       topic: function(resourceCache) {
         return resourceCache.cacheFromUrl(dummyRoot + 'notexists', this.callback);
       },
@@ -135,7 +140,34 @@ vows.describe('ResourceCache').addBatch({
       }
     },
     
-    'when caching an existing resource through HTTP with a content type': {
+    'when caching an existing resource by URL through HTTPS': {
+      topic: function(resourceCache) {
+        return resourceCache.cacheFromUrl(dummyRootSsl, this.callback);
+      },
+      
+      'should use a temporary file': function(err, result) {
+        should.not.exist(err);
+        result.should.match(/^\/tmp\/[\w\d_]+\/\d+\.tmp$/);
+      },
+      
+      'should store the resource contents in this file': function(err, result) {
+        should.not.exist(err);
+        fs.readFileSync(result, 'utf8').should.eql('contents');
+      }
+    },
+    
+    'when caching a non-existing resource by URL through HTTPS': {
+      topic: function(resourceCache) {
+        return resourceCache.cacheFromUrl(dummyRootSsl + 'notexists', this.callback);
+      },
+      
+      'should result in an error': function(err, result) {
+        err.should.eql('GET request to ' + dummyRootSsl + 'notexists failed with status 404');
+        should.not.exist(result);
+      }
+    },
+    
+    'when caching an existing resource by URL with a content type': {
       topic: function(resourceCache) {
         return resourceCache.cacheFromUrl(dummyRoot, 'text/plain', this.callback);
       },
@@ -147,3 +179,12 @@ vows.describe('ResourceCache').addBatch({
     },
   }
 }).export(module);
+
+function createDummyServer() {
+  var server = express.createServer.apply(express, arguments);
+  server.get(/^\/$/, function (req, res, next) {
+    var contentType = req.headers.accept || '';
+    res.send('contents' + contentType, 200);
+  });
+  return server;
+}

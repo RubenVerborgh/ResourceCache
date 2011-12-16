@@ -1,6 +1,6 @@
 {
   "name": "resourcecache",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Caches resources from a string or URL in local files.",
   "author": "Ruben Verborgh <ruben.verborgh@gmail.com>",
   "keywords": ["cache", "resource"],
