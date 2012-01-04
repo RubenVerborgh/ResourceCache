@@ -15,7 +15,7 @@ var dummyServer,
 
 vows.describe('ResourceCache').addBatch({
   'The ResourceCache module': {
-    topic: function() { return ResourceCache; },
+    topic: function () { return ResourceCache; },
     
     'should be a function': function (ResourceCache) {
       ResourceCache.should.be.a('function');
@@ -38,7 +38,7 @@ vows.describe('ResourceCache').addBatch({
       dummyServerSsl = createDummyServer({ key:  fs.readFileSync('test/assets/privatekey.pem'),
                                            cert: fs.readFileSync('test/assets/certificate.pem') });
       dummyServerSsl.listen(dummyPortSsl);
-      return new ResourceCache()
+      return new ResourceCache();
     },
     
     tearDown: function () {
@@ -52,29 +52,29 @@ vows.describe('ResourceCache').addBatch({
     },
     
     'when asked for its directory name': {
-      topic: function(resourceCache) {
+      topic: function (resourceCache) {
         return resourceCache.getDirectoryName(this.callback);
       },
       
-      'should return the name of a temporary directory': function(err, dirName) {
+      'should return the name of a temporary directory': function (err, dirName) {
         should.not.exist(err);
         dirName.should.match(/^\/tmp\/[\w\d_]+\/$/);
       },
       
-      'should have created that temporary directory': function(err, dirName) {
+      'should have created that temporary directory': function (err, dirName) {
         should.not.exist(err);
         path.existsSync(dirName).should.be.true;
       },
       
       'a second time': {
-        topic: function(firstDirName, resourceCache) {
+        topic: function (firstDirName, resourceCache) {
           var thiz = this;
-          return resourceCache.getDirectoryName(function(err, secondDirName) {
+          return resourceCache.getDirectoryName(function (err, secondDirName) {
             thiz.callback(err, firstDirName, secondDirName);
           });
         },
         
-        'should return the name of the same temporary directory': function(err, firstDirName, secondDirName) {
+        'should return the name of the same temporary directory': function (err, firstDirName, secondDirName) {
           should.not.exist(err);
           secondDirName.should.eql(firstDirName);
         }
@@ -82,97 +82,97 @@ vows.describe('ResourceCache').addBatch({
     },
     
     'when caching a resource from a string': {
-      topic: function(resourceCache) {
+      topic: function (resourceCache) {
         return resourceCache.cacheFromString('contents', this.callback);
       },
       
-      'should use a temporary file': function(err, result) {
+      'should use a temporary file': function (err, result) {
         should.not.exist(err);
         result.should.match(/^\/tmp\/[\w\d_]+\/\d+\.tmp$/);
       },
       
-      'should store the resource contents in this file': function(err, result) {
+      'should store the resource contents in this file': function (err, result) {
         should.not.exist(err);
         fs.readFileSync(result, 'utf8').should.eql('contents');
       }
     },
     
     'when releasing a resource from cache': {
-      topic: function(resourceCache) {
+      topic: function (resourceCache) {
         var thiz = this;
-        return resourceCache.cacheFromString('contents', function(err, name) {
-          resourceCache.release(name, function(err) {
+        return resourceCache.cacheFromString('contents', function (err, name) {
+          resourceCache.release(name, function (err) {
             thiz.callback(err, name);
           });
         });
       },
       
-      'should remove the temporary file': function(err, name) {
+      'should remove the temporary file': function (err, name) {
         should.not.exist(err);
         path.existsSync(name).should.be.false;
       }
     },
     
     'when caching an existing resource by URL through HTTP': {
-      topic: function(resourceCache) {
+      topic: function (resourceCache) {
         return resourceCache.cacheFromUrl(dummyRoot, this.callback);
       },
       
-      'should use a temporary file': function(err, result) {
+      'should use a temporary file': function (err, result) {
         should.not.exist(err);
         result.should.match(/^\/tmp\/[\w\d_]+\/\d+\.tmp$/);
       },
       
-      'should store the resource contents in this file': function(err, result) {
+      'should store the resource contents in this file': function (err, result) {
         should.not.exist(err);
         fs.readFileSync(result, 'utf8').should.eql('contents');
       }
     },
     
     'when caching a non-existing resource by URL through HTTP': {
-      topic: function(resourceCache) {
+      topic: function (resourceCache) {
         return resourceCache.cacheFromUrl(dummyRoot + 'notexists', this.callback);
       },
       
-      'should result in an error': function(err, result) {
+      'should result in an error': function (err, result) {
         err.should.eql('GET request to ' + dummyRoot + 'notexists failed with status 404');
         should.not.exist(result);
       }
     },
     
     'when caching an existing resource by URL through HTTPS': {
-      topic: function(resourceCache) {
+      topic: function (resourceCache) {
         return resourceCache.cacheFromUrl(dummyRootSsl, this.callback);
       },
       
-      'should use a temporary file': function(err, result) {
+      'should use a temporary file': function (err, result) {
         should.not.exist(err);
         result.should.match(/^\/tmp\/[\w\d_]+\/\d+\.tmp$/);
       },
       
-      'should store the resource contents in this file': function(err, result) {
+      'should store the resource contents in this file': function (err, result) {
         should.not.exist(err);
         fs.readFileSync(result, 'utf8').should.eql('contents');
       }
     },
     
     'when caching a non-existing resource by URL through HTTPS': {
-      topic: function(resourceCache) {
+      topic: function (resourceCache) {
         return resourceCache.cacheFromUrl(dummyRootSsl + 'notexists', this.callback);
       },
       
-      'should result in an error': function(err, result) {
+      'should result in an error': function (err, result) {
         err.should.eql('GET request to ' + dummyRootSsl + 'notexists failed with status 404');
         should.not.exist(result);
       }
     },
     
     'when caching an existing resource by URL with a content type': {
-      topic: function(resourceCache) {
+      topic: function (resourceCache) {
         return resourceCache.cacheFromUrl(dummyRoot, 'text/plain', this.callback);
       },
       
-      'should send the Content-Type header': function(err, result) {
+      'should send the Content-Type header': function (err, result) {
         should.not.exist(err);
         fs.readFileSync(result, 'utf8').should.eql('contentstext/plain');
       }
