@@ -4,7 +4,6 @@ var ResourceCache = require('../lib/resourcecache');
 var vows = require('vows'),
     should = require('should'),
     fs = require('fs'),
-    path = require('path'),
     express = require('express');
 var dummyServer,
     dummyServerSsl,
@@ -63,7 +62,7 @@ vows.describe('ResourceCache').addBatch({
       
       'should have created that temporary directory': function (err, dirName) {
         should.not.exist(err);
-        path.existsSync(dirName).should.be.true;
+        fs.existsSync(dirName).should.be.true;
       },
       
       'a second time': {
@@ -109,7 +108,7 @@ vows.describe('ResourceCache').addBatch({
       
       'should remove the temporary file': function (err, name) {
         should.not.exist(err);
-        path.existsSync(name).should.be.false;
+        fs.existsSync(name).should.be.false;
       }
     },
     
